@@ -1,0 +1,32 @@
+/* フォントと基本スタイルの設定 */
+body {
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+}
+
+/* ドラッグ＆ドロップエリアのスタイル */
+.drag-over {
+    border-color: #3b82f6; /* 青色 */
+    background-color: #eff6ff; /* 薄い青色 */
+}
+
+/* プレビューエリアの円形ガイドのスタイル */
+.preview-circle-guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 9999px; /* 正円にする */
+    /* 円の外側を半透明の黒で覆う */
+    box-shadow: 0 0 0 999px rgba(0,0,0,0.5);
+    pointer-events: none; /* この要素がクリックイベントを妨げないようにする */
+}
+
+/* 位置調整エディタのカーソルスタイル */
+#editor-canvas.cursor-grab {
+    cursor: grab;
+}
+
+#editor-canvas.cursor-grabbing {
+    cursor: grabbing;
+}

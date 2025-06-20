@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINEミニアプリ用 アイコンメーカー（β）</title>
+    <!-- Tailwind CSSを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Inter) を読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 外部CSSファイルを読み込み -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">LINEミニアプリ用 アイコンメーカー（β）</h1>
+            <p class="mt-2 text-gray-600">ロゴ画像をアップロードして、規定に準拠したアイコンを簡単に作成できます。</p>
+        </header>
+
+        <main id="app" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+
+            <!-- 1. 画像アップロード画面 -->
+            <div id="upload-view">
+                <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer transition-colors duration-300 hover:bg-gray-100">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <p class="mt-4 text-gray-600">ここにファイルをドラッグ＆ドロップ</p>
+                    <p class="text-sm text-gray-500">または</p>
+                    <button type="button" id="upload-button" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        ファイルを選択
+                    </button>
+                    <input type="file" id="file-input" class="hidden" accept="image/png, image/jpeg, image/gif">
+                </div>
+                <p class="text-xs text-gray-500 mt-4 text-center">対応形式: PNG, JPG, GIF | 最大ファイルサイズ: 10MB</p>
+
+            </div>
+
+            <!-- 2. 画像編集画面 (初期状態では非表示) -->
+            <div id="editor-view" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 左側: プレビューエリア -->
+                    <div class="flex flex-col items-center">
+                        <h3 class="text-lg font-semibold mb-4 text-center">プレビュー (130 x 130px)</h3>
+                        <div id="preview-container" class="relative w-[130px] h-[130px] bg-gray-200 rounded-lg overflow-hidden shadow-inner">
+                            <canvas id="canvas" width="130" height="130"></canvas>
+                            <!-- 円形のガイドライン -->
+                            <div class="preview-circle-guide"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 text-center">
+                            赤枠: 54px(内)〜90px(外)の推奨サイズ<br>(この枠線は出力されません)
+                        </p>
+                    </div>
+
+                    <!-- 右側: 設定エリア -->
+                    <div class="flex flex-col justify-center space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">位置・サイズ調整</label>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <button type="button" id="adjust-position-btn" class="text-sm px-3 py-1 border rounded-md hover:bg-gray-100">詳細調整...</button>
+                                <button type="button" id="reset-position-btn" class="text-sm px-3 py-1 border rounded-md hover:bg-gray-100">元に戻す</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="bg-color" class="block text-sm font-medium text-gray-700">背景色</label>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <input id="bg-color" type="color" value="#FFFFFF" class="p-1 h-10 w-14 block bg-white border border-gray-300 rounded-md cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 下部: 操作エリア -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 text-center">保存形式</label>
+                        <div id="format-selector" class="flex justify-center items-center space-x-4 mt-1">
+                            <label class="flex items-center">
+                                <input type="radio" name="format" value="jpg" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
+                                <span class="ml-2 text-sm text-gray-600">JPG</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="format" value="png" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-600">PNG</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button type="button" id="download-button" class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                            画像をダウンロード
+                        </button>
+                        <button type="button" id="reset-button" class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                             別の画像でやり直す
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 位置調整モーダル -->
+    <div id="position-editor-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 class="text-lg font-semibold mb-4 text-center">位置とサイズを調整</h3>
+            <div class="relative w-[260px] h-[260px] mx-auto bg-gray-200 rounded-lg overflow-hidden shadow-inner">
+                <canvas id="editor-canvas" width="260" height="260" class="cursor-grab"></canvas>
+                <div class="preview-circle-guide"></div>
+            </div>
+            <div class="grid grid-cols-3 items-center justify-items-center gap-2 my-4">
+                <div></div>
+                <button id="up-btn" class="border rounded-md p-2 w-12 h-12 flex items-center justify-center hover:bg-gray-100">↑</button>
+                <div></div>
+                <button id="left-btn" class="border rounded-md p-2 w-12 h-12 flex items-center justify-center hover:bg-gray-100">←</button>
+                <div class="text-xs text-gray-500 flex items-center justify-center text-center">ドラッグで<br>移動</div>
+                <button id="right-btn" class="border rounded-md p-2 w-12 h-12 flex items-center justify-center hover:bg-gray-100">→</button>
+                <div></div>
+                <button id="down-btn" class="border rounded-md p-2 w-12 h-12 flex items-center justify-center hover:bg-gray-100">↓</button>
+                <div></div>
+            </div>
+            <p class="text-center text-sm text-gray-500 mb-4">マウスホイールで拡大・縮小できます</p>
+            <button type="button" id="close-modal-btn" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">閉じる</button>
+        </div>
+    </div>
+
+    <!-- 外部JavaScriptファイルを読み込み -->
+    <script src="script.js"></script>
+</body>
+</html>
